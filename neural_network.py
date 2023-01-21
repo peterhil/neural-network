@@ -1,13 +1,19 @@
 # Usage: python -i neural_network.py -p
 
+"""
+Simple neural network with backpropagation.
+https://enlight.nyc/projects/neural-network
+"""
+
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 
 from numpy.random import randn
 
-limit = 0.999
-show_plot = (len(sys.argv) >= 2 and sys.argv[1] == '-p') or False
+LIMIT = 0.999
+SHOW_PLOT = len(sys.argv) >= 2 and sys.argv[1] == '-p'
 
 
 # X = (hours studying, hours sleeping), y = score on test
@@ -47,8 +53,10 @@ def plot(count, loss, outputs):
 
 
 class NeuralNetwork:
+    """Simple neural network with backpropagation.
+    """
     def __init__(self):
-        """initialise parameters"""
+        """Initialise network with parameters"""
         self.input_size = 2
         self.output_size = 1
         self.hidden_size = 3
@@ -60,7 +68,7 @@ class NeuralNetwork:
         self.w2 = randn(self.hidden_size, self.output_size)
 
     def forward(self, x):
-        """forward propagation through our network"""
+        """Forward propagation through our network"""
         # dot product of x (input) and first set of 2x3 weights
         self.z = np.dot(x, self.w1)
         # activation function
@@ -74,7 +82,7 @@ class NeuralNetwork:
         return out
 
     def backward(self, x, y, o):
-        """backward propagate through the network"""
+        """Backward propagate through the network"""
         # error in output
         self.o_error = y - o
         # applying derivative of sigmoid to error
@@ -91,16 +99,18 @@ class NeuralNetwork:
         self.w2 += self.z2.T.dot(self.o_delta)
 
     def train(self, x, y):
-        """train the network with forward and backward propagation"""
+        """Train the network with forward and backward propagation"""
         o = self.forward(x)
         self.backward(x, y, o)
 
     def predict(self):
+        """Make a prediction based on trained weights"""
         print("Predicted data based on trained weights:")
         print(f"Input (scaled): \n{ x_predicted }")
         print(f"Output: \n{ self.forward(x_predicted) }")
 
     def save_weights(self):
+        """Save weigths into data directory"""
         np.savetxt("data/w1.txt", self.w1, fmt="%s")
         np.savetxt("data/w2.txt", self.w2, fmt="%s")
 
@@ -127,10 +137,10 @@ for i in range(1000):
     losses.append(np.round(float(loss), 6))
     outputs.append(np.mean(forward))
 
-    if 1 - loss >= limit:
-        if show_plot:
+    if 1 - loss >= LIMIT:
+        if SHOW_PLOT:
             plot(counts, losses, outputs)
-        print(f'Limit { limit * 100 }% at count: {i}')
+        print(f'Limit { LIMIT * 100 }% at count: {i}')
         break
 
     nn.train(x, y)
