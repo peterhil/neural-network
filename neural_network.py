@@ -21,46 +21,54 @@ def sigmoid(s):
     return 1 / (1 + np.exp(-s))
 
 
+def sigmoid_prime(s):
+    """derivative of sigmoid"""
+    return s * (1 - s)
+
+
 class NeuralNetwork:
     def __init__(self):
-        """
-        Initialise parameters
-        """
+        """initialise parameters"""
         self.input_size = 2
         self.output_size = 1
         self.hidden_size = 3
 
         # weights
         # (2x3) weight matrix from input to hidden layer
-        self.w1 = randn(
-            self.input_size,
-            self.hidden_size,
-        )
+        self.w1 = randn(self.input_size, self.hidden_size)
         # (3x1) weight matrix from hidden to output layer
-        self.w2 = randn(
-            self.hidden_size,
-            self.output_size,
-        )
+        self.w2 = randn(self.hidden_size, self.output_size)
 
     def forward(self, x):
-        """
-        forward propagation through our network
-        """
+        """forward propagation through our network"""
         # dot product of x (input) and first set of 2x3 weights
-        self.z = np.dot(
-            x,
-            self.w1,
-        )
-        self.z2 = sigmoid(self.z)  # activation function
+        self.z = np.dot(x, self.w1)
+        # activation function
+        self.z2 = sigmoid(self.z)
 
         # dot product of hidden layer (z2) and second set of 3x1 weights
-        self.z3 = np.dot(
-            self.z2,
-            self.w2,
-        )
-        out = sigmoid(self.z3)  # final activation function
+        self.z3 = np.dot(self.z2, self.w2)
+        # final activation function
+        out = sigmoid(self.z3)
 
         return out
+
+    def backward(self, x, y, o):
+        """backward propagate through the network"""
+        # error in output
+        self.o_error = y - o
+        # applying derivative of sigmoid to error
+        self.o_delta = self.o_error * self.sigmoid_prime(o)
+
+        # z2 error: how much our hidden layer weights contributed to output error
+        self.z2_error = self.o_delta.dot(self.w2.T)
+        # applying derivative of sigmoid to z2 error
+        self.z2_delta = self.z2_error * self.sigmoid_prime(self.z2)
+
+        # adjusting first set (input --> hidden) weights
+        self.w1 += x.T.dot(self.z2_delta)
+        # adjusting second set (hidden --> output) weights
+        self.w2 += self.z2.T.dot(self.o_delta)
 
 
 nn = NeuralNetwork()
