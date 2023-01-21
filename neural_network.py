@@ -78,8 +78,16 @@ class NeuralNetwork:
 
 nn = NeuralNetwork()
 
-# defining our output
-out = nn.forward(x)
+print("Input:\n" + str(x))
+print("Actual Output:\n" + str(y))
 
-print(f"Predicted Output: \n{ str(out) }")
-print(f"Actual Output: \n{ str(y) }")
+# train the nn 1,000 times
+for i in range(1000):
+    forward = nn.forward(x)
+    mean_squared_error = np.mean(np.square(y - forward))
+
+    print("Predicted Output:\n" + str(forward))
+    print("Loss: " + str(mean_squared_error))
+    print()
+
+    nn.train(x, y)
