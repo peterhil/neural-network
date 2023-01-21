@@ -75,6 +75,15 @@ class NeuralNetwork:
         o = self.forward(x)
         self.backward(x, y, o)
 
+    def predict(self):
+        print("Predicted data based on trained weights: ")
+        print("Input (scaled): \n" + str(x_predicted))
+        print("Output: \n" + str(self.forward(x_predicted)))
+
+    def save_weights(self):
+        np.savetxt("data/w1.txt", self.w1, fmt="%s")
+        np.savetxt("data/w2.txt", self.w2, fmt="%s")
+
 
 nn = NeuralNetwork()
 
@@ -91,3 +100,6 @@ for i in range(1000):
     print()
 
     nn.train(x, y)
+
+nn.save_weights()
+nn.predict()

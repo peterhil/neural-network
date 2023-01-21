@@ -7,3 +7,6 @@ dist/
 
 # Environments
 venv/
+
+# Other
+data/
