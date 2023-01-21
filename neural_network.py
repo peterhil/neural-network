@@ -4,7 +4,7 @@ import sys
 
 from numpy.random import randn
 
-
+limit = 0.999
 show_plot = (len(sys.argv) >= 2 and sys.argv[1] == '-p') or False
 
 
@@ -30,7 +30,7 @@ def sigmoid_prime(s):
     """derivative of sigmoid"""
     return s * (1 - s)
 
-def plot(count, loss):
+def plot(count, loss, outputs):
     """plot the iterations in real time
     """
     plt.cla()
@@ -38,6 +38,8 @@ def plot(count, loss):
     plt.xlabel("Iterations")
     plt.ylabel("Loss")
     plt.plot(count, loss)
+    plt.plot(count, 1 - np.array(loss))
+    plt.plot(count, outputs)
     plt.pause(.001)
 
 
@@ -107,6 +109,7 @@ print(f"Actual Output:\n{ y }\n")
 
 counts = []  # list to store iteration count
 losses = []  # list to store loss values
+outputs = []
 
 # train the nn 1,000 times
 for i in range(1000):
@@ -119,9 +122,13 @@ for i in range(1000):
 
     counts.append(i)
     losses.append(np.round(float(loss), 6))
+    outputs.append(np.mean(forward))
 
-    if show_plot == True and i % 100 == 0:
-        plot(counts, losses)
+    if 1 - loss >= limit:
+        if show_plot:
+            plot(counts, losses, outputs)
+        print(f'Limit { limit * 100 }% at count: {i}')
+        break
 
     nn.train(x, y)
 
