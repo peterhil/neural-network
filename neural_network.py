@@ -12,6 +12,7 @@ import numpy as np
 
 from numpy.random import randn
 
+
 LIMIT = 0.999
 SHOW_PLOT = len(sys.argv) >= 2 and sys.argv[1] == '-p'
 
@@ -29,6 +30,10 @@ x = np.split(x_all, [3])[0]  # training data
 x_predicted = np.split(x_all, [3])[1]  # testing data
 
 
+print(f"Input:\n{ x }\n")
+print(f"Actual Output:\n{ y }\n")
+
+
 def sigmoid(s):
     """activation function"""
     return 1 / (1 + np.exp(-s))
@@ -39,15 +44,15 @@ def sigmoid_prime(s):
     return s * (1 - s)
 
 
-def plot(count, loss, outputs):
+def plot(count, losses, outputs):
     """plot the iterations in real time
     """
     plt.cla()
     plt.title("Loss over Iterations")
     plt.xlabel("Iterations")
     plt.ylabel("Loss")
-    plt.plot(count, loss)
-    plt.plot(count, 1 - np.array(loss))
+    plt.plot(count, losses)
+    plt.plot(count, 1 - np.array(losses))
     plt.plot(count, outputs)
     plt.pause(.001)
 
@@ -63,45 +68,45 @@ class NeuralNetwork:
 
         # weights
         # (2x3) weight matrix from input to hidden layer
-        self.w1 = randn(self.input_size, self.hidden_size)
+        self.weigths_input = randn(self.input_size, self.hidden_size)
         # (3x1) weight matrix from hidden to output layer
-        self.w2 = randn(self.hidden_size, self.output_size)
+        self.weigths_hidden = randn(self.hidden_size, self.output_size)
 
-    def forward(self, x):
+    def forward(self, inputs):
         """Forward propagation through our network"""
         # dot product of x (input) and first set of 2x3 weights
-        self.z = np.dot(x, self.w1)
+        self.z = np.dot(inputs, self.weigths_input)
         # activation function
         self.z2 = sigmoid(self.z)
 
         # dot product of hidden layer (z2) and second set of 3x1 weights
-        self.z3 = np.dot(self.z2, self.w2)
+        self.z3 = np.dot(self.z2, self.weigths_hidden)
         # final activation function
-        out = sigmoid(self.z3)
+        outputs = sigmoid(self.z3)
 
-        return out
+        return outputs
 
-    def backward(self, x, y, o):
+    def backward(self, inputs, targets, outputs):
         """Backward propagate through the network"""
         # error in output
-        self.o_error = y - o
+        self.o_error = targets - outputs
         # applying derivative of sigmoid to error
-        self.o_delta = self.o_error * sigmoid_prime(o)
+        self.o_delta = self.o_error * sigmoid_prime(outputs)
 
         # how much our hidden layer weights contributed to output error
-        self.z2_error = self.o_delta.dot(self.w2.T)
+        self.z2_error = self.o_delta.dot(self.weigths_hidden.T)
         # applying derivative of sigmoid to z2 error
         self.z2_delta = self.z2_error * sigmoid_prime(self.z2)
 
         # adjusting first set (input --> hidden) weights
-        self.w1 += x.T.dot(self.z2_delta)
+        self.weigths_input += inputs.T.dot(self.z2_delta)
         # adjusting second set (hidden --> output) weights
-        self.w2 += self.z2.T.dot(self.o_delta)
+        self.weigths_hidden += self.z2.T.dot(self.o_delta)
 
-    def train(self, x, y):
+    def train(self, inputs, targets):
         """Train the network with forward and backward propagation"""
-        o = self.forward(x)
-        self.backward(x, y, o)
+        outputs = self.forward(inputs)
+        self.backward(inputs, targets, outputs)
 
     def predict(self):
         """Make a prediction based on trained weights"""
@@ -111,39 +116,41 @@ class NeuralNetwork:
 
     def save_weights(self):
         """Save weigths into data directory"""
-        np.savetxt("data/w1.txt", self.w1, fmt="%s")
-        np.savetxt("data/w2.txt", self.w2, fmt="%s")
+        np.savetxt("data/weigths_input.txt", self.weigths_input, fmt="%s")
+        np.savetxt("data/weigths_hidden.txt", self.weigths_hidden, fmt="%s")
 
 
-nn = NeuralNetwork()
+def train_network(network, inputs, targets):
+    """Train the network in a loop"""
+    counts = []  # list to store iteration count
+    losses = []  # list to store loss values
+    mean_outputs = []
 
-print(f"Input:\n{ x }\n")
-print(f"Actual Output:\n{ y }\n")
+    # train the network 1,000 times
+    for i in range(1000):
+        forward = network.forward(inputs)
+        loss = np.mean(np.square(targets - forward))  # mean squared error
 
-counts = []  # list to store iteration count
-losses = []  # list to store loss values
-outputs = []
+        print(f"Predicted Output:\n{ forward }")
+        print(f"Loss: { loss }")
+        print()
 
-# train the nn 1,000 times
-for i in range(1000):
-    forward = nn.forward(x)
-    loss = np.mean(np.square(y - forward))  # mean squared error
+        counts.append(i)
+        losses.append(np.round(float(loss), 6))
+        mean_outputs.append(np.mean(forward))
 
-    print(f"Predicted Output:\n{ forward }")
-    print(f"Loss: { loss }")
-    print()
-
-    counts.append(i)
-    losses.append(np.round(float(loss), 6))
-    outputs.append(np.mean(forward))
-
-    if 1 - loss >= LIMIT:
         if SHOW_PLOT:
-            plot(counts, losses, outputs)
-        print(f'Limit { LIMIT * 100 }% at count: {i}')
-        break
+            plot(counts, losses, mean_outputs)
 
-    nn.train(x, y)
+        if 1 - loss >= LIMIT:
+            print(f'Limit { LIMIT * 100 }% at count: {i}')
+            break
 
-nn.save_weights()
-nn.predict()
+        network.train(inputs, targets)
+
+
+if __name__ == '__main__':
+    nn = NeuralNetwork()
+    train_network(nn, x, y)
+    nn.save_weights()
+    nn.predict()
