@@ -1,6 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from numpy.random import randn
+
+
+show_plot = False
 
 
 # X = (hours studying, hours sleeping), y = score on test
@@ -24,6 +28,16 @@ def sigmoid(s):
 def sigmoid_prime(s):
     """derivative of sigmoid"""
     return s * (1 - s)
+
+def plot(count, loss):
+    """plot the iterations in real time
+    """
+    plt.cla()
+    plt.title("Loss over Iterations")
+    plt.xlabel("Iterations")
+    plt.ylabel("Loss")
+    plt.plot(count, loss)
+    plt.pause(.001)
 
 
 class NeuralNetwork:
@@ -90,14 +104,23 @@ nn = NeuralNetwork()
 print(f"Input:\n{ x }\n")
 print(f"Actual Output:\n{ y }\n")
 
+counts = []  # list to store iteration count
+losses = []  # list to store loss values
+
 # train the nn 1,000 times
 for i in range(1000):
     forward = nn.forward(x)
-    mean_squared_error = np.mean(np.square(y - forward))
+    loss = np.mean(np.square(y - forward))  # mean squared error
 
     print(f"Predicted Output:\n{ forward }")
-    print(f"Loss: { mean_squared_error }")
+    print(f"Loss: { loss }")
     print()
+
+    counts.append(i)
+    losses.append(np.round(float(loss), 6))
+
+    if show_plot == True and i % 100 == 0:
+        plot(counts, losses)
 
     nn.train(x, y)
 
