@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 from numpy.random import randn
 
 
-show_plot = False
+show_plot = (len(sys.argv) >= 2 and sys.argv[1] == '-p') or False
 
 
 # X = (hours studying, hours sleeping), y = score on test
