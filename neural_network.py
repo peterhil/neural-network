@@ -1,3 +1,5 @@
+# Usage: python -i neural_network.py -p
+
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
