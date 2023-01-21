@@ -76,9 +76,9 @@ class NeuralNetwork:
         self.backward(x, y, o)
 
     def predict(self):
-        print("Predicted data based on trained weights: ")
-        print("Input (scaled): \n" + str(x_predicted))
-        print("Output: \n" + str(self.forward(x_predicted)))
+        print("Predicted data based on trained weights:")
+        print(f"Input (scaled): \n{ x_predicted }")
+        print(f"Output: \n{ self.forward(x_predicted) }")
 
     def save_weights(self):
         np.savetxt("data/w1.txt", self.w1, fmt="%s")
@@ -87,16 +87,16 @@ class NeuralNetwork:
 
 nn = NeuralNetwork()
 
-print("Input:\n" + str(x))
-print("Actual Output:\n" + str(y))
+print(f"Input:\n{ x }\n")
+print(f"Actual Output:\n{ y }\n")
 
 # train the nn 1,000 times
 for i in range(1000):
     forward = nn.forward(x)
     mean_squared_error = np.mean(np.square(y - forward))
 
-    print("Predicted Output:\n" + str(forward))
-    print("Loss: " + str(mean_squared_error))
+    print(f"Predicted Output:\n{ forward }")
+    print(f"Loss: { mean_squared_error }")
     print()
 
     nn.train(x, y)
