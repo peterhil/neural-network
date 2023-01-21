@@ -58,17 +58,22 @@ class NeuralNetwork:
         # error in output
         self.o_error = y - o
         # applying derivative of sigmoid to error
-        self.o_delta = self.o_error * self.sigmoid_prime(o)
+        self.o_delta = self.o_error * sigmoid_prime(o)
 
         # z2 error: how much our hidden layer weights contributed to output error
         self.z2_error = self.o_delta.dot(self.w2.T)
         # applying derivative of sigmoid to z2 error
-        self.z2_delta = self.z2_error * self.sigmoid_prime(self.z2)
+        self.z2_delta = self.z2_error * sigmoid_prime(self.z2)
 
         # adjusting first set (input --> hidden) weights
         self.w1 += x.T.dot(self.z2_delta)
         # adjusting second set (hidden --> output) weights
         self.w2 += self.z2.T.dot(self.o_delta)
+
+    def train(self, x, y):
+        """train the network with forward and backward propagation"""
+        o = self.forward(x)
+        self.backward(x, y, o)
 
 
 nn = NeuralNetwork()
