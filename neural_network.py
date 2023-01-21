@@ -32,6 +32,7 @@ def sigmoid_prime(s):
     """derivative of sigmoid"""
     return s * (1 - s)
 
+
 def plot(count, loss, outputs):
     """plot the iterations in real time
     """
@@ -79,7 +80,7 @@ class NeuralNetwork:
         # applying derivative of sigmoid to error
         self.o_delta = self.o_error * sigmoid_prime(o)
 
-        # z2 error: how much our hidden layer weights contributed to output error
+        # how much our hidden layer weights contributed to output error
         self.z2_error = self.o_delta.dot(self.w2.T)
         # applying derivative of sigmoid to z2 error
         self.z2_delta = self.z2_error * sigmoid_prime(self.z2)
