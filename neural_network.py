@@ -6,6 +6,7 @@ Simple neural network with backpropagation.
 https://enlight.nyc/projects/neural-network
 """
 
+import click
 import sys
 
 import matplotlib.pyplot as plt
@@ -100,20 +101,20 @@ class NeuralNetwork:
         np.savetxt("data/weigths_hidden.txt", self.weigths_hidden, fmt="%s")
 
 
-def train_network(network, inputs, targets, limit=0.99, show_plot=False):
+def train_network(network, inputs, targets, n=1000, limit=0.99, show_plot=False, verbose=False):
     """Train the network in a loop"""
     counts = []  # list to store iteration count
     losses = []  # list to store loss values
     mean_outputs = []
 
     # train the network 1,000 times
-    for i in range(1000):
+    for i in range(n):
         forward = network.forward(inputs)
         loss = np.mean(np.square(targets - forward))  # mean squared error
 
-        print(f"Predicted Output:\n{ forward }")
-        print(f"Loss: { loss }")
-        print()
+        if verbose:
+            print(f"Predicted Output:\n{ forward }")
+            print(f"Loss: { loss }\n")
 
         counts.append(i)
         losses.append(np.round(float(loss), 6))
@@ -122,14 +123,19 @@ def train_network(network, inputs, targets, limit=0.99, show_plot=False):
         if show_plot:
             plot(counts, losses, mean_outputs)
 
-        if 1 - loss >= limit:
-            print(f'Limit { LIMIT * 100 }% at count: {i}')
+        if loss <= limit:
+            print(f'Limit { limit * 100 }% at count: {i}')
             break
 
         network.train(inputs, targets)
 
 
-def main(options):
+@click.command()
+@click.option('--limit', '-l', default=0.001, help='Break early when loss equals limit')
+@click.option('--number', '-n', default=1000, help='Number of iterations to train the network')
+@click.option('--plot', '-p', is_flag=True, help='Plot progress with Matplotlib')
+@click.option('--verbose', '-v', is_flag=True, help='Verbose output')
+def main(number, limit=0.001, plot=False, verbose=False):
     # X = (hours studying, hours sleeping), y = score on test
     x_all = np.array(([2, 9], [1, 5], [3, 6], [5, 10]), dtype=float)  # input data
     y = np.array(([92], [86], [89]), dtype=float)  # output
@@ -147,18 +153,10 @@ def main(options):
 
     nn = NeuralNetwork()
 
-    train_network(nn, x, y, **options)
+    train_network(nn, x, y, limit=limit, show_plot=plot, verbose=verbose)
     nn.save_weights()
     nn.predict(x_predicted)
 
 
 if __name__ == '__main__':
-    LIMIT = 0.999
-    SHOW_PLOT = len(sys.argv) >= 2 and sys.argv[1] == '-p'
-
-    options = {
-        'limit': LIMIT,
-        'show_plot': SHOW_PLOT,
-    }
-
-    main(options)
+    main()
