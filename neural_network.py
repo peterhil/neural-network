@@ -13,27 +13,6 @@ import numpy as np
 from numpy.random import randn
 
 
-LIMIT = 0.999
-SHOW_PLOT = len(sys.argv) >= 2 and sys.argv[1] == '-p'
-
-
-# X = (hours studying, hours sleeping), y = score on test
-x_all = np.array(([2, 9], [1, 5], [3, 6], [5, 10]), dtype=float)  # input data
-y = np.array(([92], [86], [89]), dtype=float)  # output
-
-# scale units
-x_all = x_all / np.max(x_all, axis=0)  # scaling input data
-y = y / 100  # scaling output data (max test score is 100)
-
-# split data
-x = np.split(x_all, [3])[0]  # training data
-x_predicted = np.split(x_all, [3])[1]  # testing data
-
-
-print(f"Input:\n{ x }\n")
-print(f"Actual Output:\n{ y }\n")
-
-
 def sigmoid(s):
     """activation function"""
     return 1 / (1 + np.exp(-s))
@@ -108,11 +87,11 @@ class NeuralNetwork:
         outputs = self.forward(inputs)
         self.backward(inputs, targets, outputs)
 
-    def predict(self):
+    def predict(self, inputs):
         """Make a prediction based on trained weights"""
         print("Predicted data based on trained weights:")
-        print(f"Input (scaled): \n{ x_predicted }")
-        print(f"Output: \n{ self.forward(x_predicted) }")
+        print(f"Input (scaled): \n{ inputs }")
+        print(f"Output: \n{ self.forward(inputs) }")
 
     def save_weights(self):
         """Save weigths into data directory"""
@@ -120,7 +99,7 @@ class NeuralNetwork:
         np.savetxt("data/weigths_hidden.txt", self.weigths_hidden, fmt="%s")
 
 
-def train_network(network, inputs, targets):
+def train_network(network, inputs, targets, limit=0.99, show_plot=False):
     """Train the network in a loop"""
     counts = []  # list to store iteration count
     losses = []  # list to store loss values
@@ -139,18 +118,46 @@ def train_network(network, inputs, targets):
         losses.append(np.round(float(loss), 6))
         mean_outputs.append(np.mean(forward))
 
-        if SHOW_PLOT:
+        if show_plot:
             plot(counts, losses, mean_outputs)
 
-        if 1 - loss >= LIMIT:
+        if 1 - loss >= limit:
             print(f'Limit { LIMIT * 100 }% at count: {i}')
             break
 
         network.train(inputs, targets)
 
 
-if __name__ == '__main__':
+def main(options):
+    # X = (hours studying, hours sleeping), y = score on test
+    x_all = np.array(([2, 9], [1, 5], [3, 6], [5, 10]), dtype=float)  # input data
+    y = np.array(([92], [86], [89]), dtype=float)  # output
+
+    # scale units
+    x_all = x_all / np.max(x_all, axis=0)  # scaling input data
+    y = y / 100  # scaling output data (max test score is 100)
+
+    # split data
+    x = np.split(x_all, [3])[0]  # training data
+    x_predicted = np.split(x_all, [3])[1]  # testing data
+
+    print(f"Input:\n{ x }\n")
+    print(f"Actual Output:\n{ y }\n")
+
     nn = NeuralNetwork()
-    train_network(nn, x, y)
+
+    train_network(nn, x, y, **options)
     nn.save_weights()
-    nn.predict()
+    nn.predict(x_predicted)
+
+
+if __name__ == '__main__':
+    LIMIT = 0.999
+    SHOW_PLOT = len(sys.argv) >= 2 and sys.argv[1] == '-p'
+
+    options = {
+        'limit': LIMIT,
+        'show_plot': SHOW_PLOT,
+    }
+
+    main(options)
